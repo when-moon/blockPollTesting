@@ -9,10 +9,9 @@ contract('Election', function (accounts){
     const _weights = [10,5,8]
     const _candidates = ["brandon","kavi","nico"]
     const _isPartial = true
-    const _startingBlock = 1200
+    const _startingBlock = 120
     const _endingBlock = 12000
     const voter = accounts[0]
-    console.log(accounts[0]);
 
     beforeEach('setup contract for test', async function () {
         election = await Election.new(_voterIDs, _weights,  _candidates, _isPartial,  _startingBlock, _endingBlock)
@@ -72,5 +71,32 @@ contract('Election', function (accounts){
         const expectedVotes = 1;
         assert.equal(voteCandidate.valueOf(), expectedVotes); 
     })  
+
+    it('Voter can split their credits among candidates', async function (){
+        await election.vote("brandon", 5); 
+        await election.vote("kavi", 2);   
+        await election.vote("nico", 3);  
+
+       const expectedCredits = -1;
+        const voterCredits = await election.votingRoll(_voterIDs[0]);
+        assert.equal(voterCredits.valueOf(),expectedCredits);
+    })  
+
+    it("Cant vote with 0 credits for candidate", async function() {
+        try {
+            await election.vote("kavi", 0)
+        }
+        catch(err) {
+            console.log(err)
+        }
+    
+        var constractCandidatesUntampered = true; //change name
+        for (var i = 0; i < _candidates.length; i++){
+            if (await election.candidates(_candidates[i]) != -1){
+             constractCandidatesUntampered = false;
+            }
+        }
+        assert(constractCandidatesUntampered);
+    })
   
 })

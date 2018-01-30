@@ -19,6 +19,8 @@ contract Election {
         
         require(_voterIDs.length>0 && _voterIDs.length==_weights.length);
         require(_candidates.length>0);
+        //require(_startingBlock == 0);
+       
         // require(_startingBlock>=block.number); //Is this really necessary?
         // require(_endingBlock>=block.number);
         // require(_endingBlock>_startingBlock);
@@ -42,6 +44,8 @@ contract Election {
     }
     
     function vote(bytes32 _candidate, uint _vote) public {
+        //require(_vote == 1);
+        require(_vote > 0);
         require(block.number>=startingBlock && block.number<=endingBlock);
         require(votingRoll[msg.sender]>0); //check that the caller is regestered voter
         require(int(_vote)<=votingRoll[msg.sender]); //check that the caller has enough credits to vote

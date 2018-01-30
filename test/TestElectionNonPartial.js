@@ -1,4 +1,5 @@
 const assertRevert = require('./helpers/assertRevert')
+const expectedException = require('./helpers/expectedException')
 const Election = artifacts.require('./Election.sol')
 
 contract('Election', function (accounts){
@@ -7,14 +8,13 @@ contract('Election', function (accounts){
     const _weights = [10,5,8]
     const _candidates = ["brandon","kavi","nico"]
     const _isPartial = false
-    const _startingBlock = 1200
+    const _startingBlock = 120
     const _endingBlock = 12000
     const voter = accounts[0]
-    console.log(accounts[0]);
 
     beforeEach('setup contract for test', async function () {
-        election = await Election.new(_voterIDs, _weights,  _candidates, _isPartial,  _startingBlock, _endingBlock)
-    })
+            election = await Election.new(_voterIDs, _weights,  _candidates, _isPartial,  _startingBlock, _endingBlock);
+       })
 
     it("Contract is deployed", async function() {
         assert(election);
@@ -64,13 +64,35 @@ contract('Election', function (accounts){
         assert.equal(voteCandidate.valueOf(), expectedVotes); 
     })
 
-    it('Voting gives away specified credits in non-partial', async function (){
-        await election.vote("kavi", 1);   
-        const voteCandidate = await election.candidates(_candidates[1]);
-        const expectedVotes = 10;
-        assert.equal(voteCandidate.valueOf(), expectedVotes); 
+
+    it("Cant vote with more credits than you have", async function() {
+        try {
+            await election.vote("brandon", 20)
+        }
+        catch(err) {
+            console.log(err)
+        }
+    
+        const expectedCredits = 10;
+        const credits = await election.votingRoll(_voterIDs[0]);
+        assert.equal(credits,expectedCredits);
     })
 
-
+    it("Cant vote for a non-existent candidate", async function() {
+        try {
+            await election.vote("Iordan", 1)
+        }
+        catch(err) {
+            console.log(err)
+        }
+    
+        var constractCandidatesUntampered = true; //change name
+        for (var i = 0; i < _candidates.length; i++){
+            if (await election.candidates(_candidates[i]) != -1){
+             constractCandidatesUntampered = false;
+            }
+        }
+        assert(constractCandidatesUntampered);
+    })
 
 })
