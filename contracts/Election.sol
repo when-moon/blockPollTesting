@@ -15,12 +15,10 @@ contract Election {
     uint public endingBlock;
     address electionOwner;
 
-    function Election(address[] _voterIDs, uint[] _weights, bytes32[] _candidates, bool _isPartial ,uint _startingBlock, uint _endingBlock) public{
+    function Election(address[] _voterIDs, uint[] _weights, bytes32[] _candidates, bool _isPartial , uint _startingBlock, uint _endingBlock) public{
         
         require(_voterIDs.length>0 && _voterIDs.length==_weights.length);
         require(_candidates.length>0);
-        //require(_startingBlock == 0);
-       
         // require(_startingBlock>=block.number); //Is this really necessary?
         // require(_endingBlock>=block.number);
         // require(_endingBlock>_startingBlock);
