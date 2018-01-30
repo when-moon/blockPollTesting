@@ -9,9 +9,8 @@ contract('Election', function (accounts){
     const _weights = [10,5,8];
     const _candidates = ["brandon","kavi","nico"];
     const _isPartial = true;
-    const _startingBlock = 120;
+    const _startingBlock = 0;
     const _endingBlock = 12000;
-    const voter = accounts[0];
 
     beforeEach('Contract setup for testing', async function () {
         election = await Election.new(_voterIDs, _weights,  _candidates, _isPartial,  _startingBlock, _endingBlock);
@@ -42,16 +41,19 @@ contract('Election', function (accounts){
     })
 
     it('Candidates have votes set to -1 as default', async function (){
-        var isSetCorrectly = true; //change name
+        // The smart contract initializes all the candidate votes to -1 if they have not been voted for yet.
+        // This for loop iterates through all candidates and checks that all of the values are set tto -1
+        var constractCandidatesUntampered = true;
         for (var i = 0; i < _candidates.length; i++){
             if (await election.candidates(_candidates[i]) != -1){
-                isSetCorrectly = false;
+                constractCandidatesUntampered = false;
             }
         }
-        assert(isSetCorrectly);
+        assert(constractCandidatesUntampered);
     })
 
     it('Voting uses up specified credits in partial', async function (){
+        // Partial voting allows for the some votes to be allocated to different candidates
         await election.vote("brandon", 1);
         const expectedCredits = 9;
         const voterCredits = await election.votingRoll(_voterIDs[0]);
@@ -59,44 +61,80 @@ contract('Election', function (accounts){
     })
 
     it('Using up all credits defaults credits balance to -1', async function (){
+        // Once all credits for a voter have been used up, the credits balance for the associated voter is supposed to be set to -1
         await election.vote("brandon", 10);
         const expectedCredits = -1;
         const voterCredits = await election.votingRoll(_voterIDs[0]);
         assert.equal(voterCredits.valueOf(),expectedCredits);
     })
 
-    it('Voting gives away specified credits in partial', async function (){
+    it('Voting allocates the specified credits in a partial election', async function (){
         await election.vote("kavi", 1);    
         const voteCandidate = await election.candidates(_candidates[1]);
         const expectedVotes = 1;
         assert.equal(voteCandidate.valueOf(), expectedVotes); 
     })  
 
-    it('Voter can split their credits among candidates', async function (){
+    it('Voter can split their credits among candidates and credits are docked', async function (){
         await election.vote("brandon", 5); 
         await election.vote("kavi", 2);   
         await election.vote("nico", 3);  
 
-       const expectedCredits = -1;
+         // Once all credits for a voter have been used up, the credits balance for the associated voter is supposed to be set to -1
+        const expectedCredits = -1;
         const voterCredits = await election.votingRoll(_voterIDs[0]);
         assert.equal(voterCredits.valueOf(),expectedCredits);
     })  
 
-    it("Cannot vote with 0 credits for candidate", async function() {
+    it('Voter can split their credits among candidates and votes are allocated succesfully', async function (){
+        await election.vote("brandon", 5); 
+        await election.vote("kavi", 2);   
+        await election.vote("nico", 3);  
+
+        // Checking each candidate has received the allocated votes
+
+        const voteCandidate1 = await election.candidates(_candidates[0]);
+        const expectedVotes1 = 5;
+        assert.equal(voteCandidate1.valueOf(), expectedVotes1); 
+
+        const voteCandidate2 = await election.candidates(_candidates[1]);
+        const expectedVotes2 = 2;
+        assert.equal(voteCandidate2.valueOf(), expectedVotes2); 
+
+        const voteCandidate3 = await election.candidates(_candidates[2]);
+        const expectedVotes3 = 3;
+        assert.equal(voteCandidate3.valueOf(), expectedVotes3); 
+    })  
+
+    it("Cannot vote with 0 credits for candidate and candidates do not receive the votes", async function() {
         try {
             await election.vote("kavi", 0);
         }
         catch(err) {
             console.log(err);
         }
-    
-        var constractCandidatesUntampered = true; //change name
+        // Ensure that no candidates have received a vote 
+        var constractCandidatesUntampered = true;
         for (var i = 0; i < _candidates.length; i++){
             if (await election.candidates(_candidates[i]) != -1){
-             constractCandidatesUntampered = false;
+                constractCandidatesUntampered = false;
             }
         }
         assert(constractCandidatesUntampered);
+    })
+
+    it("Cannot vote with 0 credits for candidate and original credits are still have retained", async function() {
+        try {
+            await election.vote("kavi", 0);
+        }
+        catch(err) {
+            console.log(err);
+        }
+        
+        // Ensure that the credits have not been docked from the voter
+        const expectedCredits = 10;
+        const credits = await election.votingRoll(_voterIDs[0]);
+        assert.equal(credits,expectedCredits);
     })
   
 })

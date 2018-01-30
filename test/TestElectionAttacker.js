@@ -24,21 +24,46 @@ contract('Election', function (accounts){
         assert(election);
     })
 
-    it("Cannot vote from foreign address", async function() {
+    it("Cannot vote from foreign address and candidates do not receive the votes", async function() {
         try {
             await election.vote("brandon", 1);
         }
         catch(err) {
             console.log(err);
         }
-    
-       var constractCandidatesUntampered = true; //change name
-       for (var i = 0; i < _candidates.length; i++){
-           if (await election.candidates(_candidates[i]) != -1){
-            constractCandidatesUntampered = false;
-           }
-       }
-       assert(constractCandidatesUntampered);
+
+        // Ensure that no candidates have received a vote 
+        // The smart contract initializes all the candidate votes to -1 if they have not been voted for yet.
+        var constractCandidatesUntampered = true; 
+        for (var i = 0; i < _candidates.length; i++){
+            if (await election.candidates(_candidates[i]) != -1){
+             constractCandidatesUntampered = false;
+            }
+        }
+        assert(constractCandidatesUntampered);
+
+    })
+
+    it("Cannot vote from foreign address and no credits are deducted from registered voters", async function() {
+        try {
+            await election.vote("brandon", 1);
+        }
+        catch(err) {
+            console.log(err);
+        }
+
+        // Ensure that no candidates have received a vote 
+        // The smart contract initializes all the candidate votes to -1 if they have not been voted for yet.
+        var constractCandidatesUntampered = true; 
+        for (var i = 0; i < _candidates.length; i++){
+            if (await election.candidates(_candidates[i]) != -1){
+             constractCandidatesUntampered = false;
+            }
+        }
+        assert(constractCandidatesUntampered);
 
     })
 })
+
+
+//Test the starting block stuff
