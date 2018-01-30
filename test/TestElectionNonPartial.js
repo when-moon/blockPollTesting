@@ -3,24 +3,24 @@ const expectedException = require('./helpers/expectedException')
 const Election = artifacts.require('./Election.sol')
 
 contract('Election', function (accounts){
-    let election
-    const _voterIDs = [accounts[0],"0x6Aff82B3AD35925AC14C87f37773CDb56e40d26d","0x14723a09acff6d2a60dcdf7aa4aff308fddc160c"]
-    const _weights = [10,5,8]
-    const _candidates = ["brandon","kavi","nico"]
-    const _isPartial = false
-    const _startingBlock = 120
-    const _endingBlock = 12000
-    const voter = accounts[0]
+    let election;
+    const _voterIDs = [accounts[0],"0x6Aff82B3AD35925AC14C87f37773CDb56e40d26d","0x14723a09acff6d2a60dcdf7aa4aff308fddc160c"];
+    const _weights = [10,5,8];
+    const _candidates = ["brandon","kavi","nico"];
+    const _isPartial = false;
+    const _startingBlock = 120;
+    const _endingBlock = 12000;
+    const voter = accounts[0];
 
-    beforeEach('setup contract for test', async function () {
+    beforeEach('Contract setup for testing', async function () {
             election = await Election.new(_voterIDs, _weights,  _candidates, _isPartial,  _startingBlock, _endingBlock);
        })
 
-    it("Contract is deployed", async function() {
+    it("Contract can deploy", async function() {
         assert(election);
     })
 
-    it('Partial voting is set', async function (){
+    it('Non-Partial voting election is selected', async function (){
         const electionType = await election.isPartial();
         const expected = false;
         assert.equal(electionType, expected);
@@ -34,20 +34,20 @@ contract('Election', function (accounts){
 
     })
 
-    it('Voter has correct weighting assosciated with it', async function (){
+    it('Voter has correct credits amount', async function (){
         const expectedCredits = 10;
         const credits = await election.votingRoll(_voterIDs[0]);
         assert.equal(credits,expectedCredits);
     })
 
     it('Candidates have votes set to -1 as default', async function (){
-        var isSetCorrectly = true; //change name
+        var constractCandidatesUntampered = true; //change name
         for (var i = 0; i < _candidates.length; i++){
             if (await election.candidates(_candidates[i]) != -1){
-                isSetCorrectly = false;
+                constractCandidatesUntampered = false;
             }
         }
-        assert(isSetCorrectly);
+        assert(constractCandidatesUntampered);
     })
 
     it('Voting uses up specified credits in non-partial', async function (){
@@ -65,12 +65,12 @@ contract('Election', function (accounts){
     })
 
 
-    it("Cant vote with more credits than you have", async function() {
+    it("Cannot vote with more credits than available", async function() {
         try {
-            await election.vote("brandon", 20)
+            await election.vote("brandon", 20);
         }
         catch(err) {
-            console.log(err)
+            console.log(err);
         }
     
         const expectedCredits = 10;
@@ -78,12 +78,12 @@ contract('Election', function (accounts){
         assert.equal(credits,expectedCredits);
     })
 
-    it("Cant vote for a non-existent candidate", async function() {
+    it("Cannot vote for a non-existent candidate", async function() {
         try {
-            await election.vote("Iordan", 1)
+            await election.vote("Iordan", 1);
         }
         catch(err) {
-            console.log(err)
+            console.log(err);
         }
     
         var constractCandidatesUntampered = true; //change name

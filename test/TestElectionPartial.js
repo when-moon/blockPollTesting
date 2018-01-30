@@ -4,24 +4,24 @@ const assertRevert = require('./helpers/assertRevert')
 const Election = artifacts.require('./Election.sol')
 
 contract('Election', function (accounts){
-    let election
-    const _voterIDs = [accounts[0],"0x6Aff82B3AD35925AC14C87f37773CDb56e40d26d","0x14723a09acff6d2a60dcdf7aa4aff308fddc160c"]
-    const _weights = [10,5,8]
-    const _candidates = ["brandon","kavi","nico"]
-    const _isPartial = true
-    const _startingBlock = 120
-    const _endingBlock = 12000
-    const voter = accounts[0]
+    let election;
+    const _voterIDs = [accounts[0],"0x6Aff82B3AD35925AC14C87f37773CDb56e40d26d","0x14723a09acff6d2a60dcdf7aa4aff308fddc160c"];
+    const _weights = [10,5,8];
+    const _candidates = ["brandon","kavi","nico"];
+    const _isPartial = true;
+    const _startingBlock = 120;
+    const _endingBlock = 12000;
+    const voter = accounts[0];
 
-    beforeEach('setup contract for test', async function () {
-        election = await Election.new(_voterIDs, _weights,  _candidates, _isPartial,  _startingBlock, _endingBlock)
+    beforeEach('Contract setup for testing', async function () {
+        election = await Election.new(_voterIDs, _weights,  _candidates, _isPartial,  _startingBlock, _endingBlock);
     })
 
-    it("Contract is deployed", async function() {
+    it("Contract can deploy", async function() {
         assert(election);
     })
 
-    it('Partial voting is set', async function (){
+    it('Partial voting election is selected', async function (){
         const electionType = await election.isPartial();
         const expected = true;
         assert.equal(electionType, expected);
@@ -82,12 +82,12 @@ contract('Election', function (accounts){
         assert.equal(voterCredits.valueOf(),expectedCredits);
     })  
 
-    it("Cant vote with 0 credits for candidate", async function() {
+    it("Cannot vote with 0 credits for candidate", async function() {
         try {
-            await election.vote("kavi", 0)
+            await election.vote("kavi", 0);
         }
         catch(err) {
-            console.log(err)
+            console.log(err);
         }
     
         var constractCandidatesUntampered = true; //change name
